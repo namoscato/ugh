@@ -1,3 +1,3 @@
 # ugh
 
-Command-line <u>**u**</u>tilities for <u>**G**</u>it<u>**H**</u>ub
+Command-line <u><strong>u</strong></u>tilities for <u><strong>G</strong></u>it<u><strong>H</strong></u>ub

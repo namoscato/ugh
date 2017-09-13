@@ -1,5 +1,7 @@
 {
   "name": "amo-ugh",
+  "author": "Nick Amoscato <nick@amoscato.com>",
+  "license": "MIT",
   "version": "0.1.0",
   "description": "Command-line utilities for GitHub",
   "bin": {
@@ -8,10 +10,12 @@
   "scripts": {
     "compile": "npm run lint && tsc",
     "lint": "tslint src/*.ts src/**/*.ts",
+    "prepublishOnly": "npm run compile",
     "start": "ts-node ./src/index.ts"
   },
-  "author": "Nick Amoscato <nick@amoscato.com>",
-  "license": "MIT",
+  "files": [
+    "bin"
+  ],
   "dependencies": {
     "bluebird": "^3.5.0",
     "github": "^9.2.0",
