@@ -14,7 +14,7 @@
     "start": "ts-node ./src/index.ts"
   },
   "files": [
-    "bin"
+    "bin/"
   ],
   "dependencies": {
     "bluebird": "^3.5.0",
