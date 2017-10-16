@@ -1,6 +1,18 @@
 # ugh
 
-Command-line <strong style="text-decoration:underline">u</strong>tilities for <strong style="text-decoration:underline">G</strong>it<strong style="text-decoration:underline">H</strong>ub
+Command-line **u**tilities for **G**it**H**ub
+
+## Installation
+
+```
+npm i -g amo-ugh
+```
+
+## Usage
+
+```
+ugh <command>
+```
 
 ## Commands
 

@@ -63,6 +63,7 @@ export default function(vorpal) {
 
                 return github.pullRequests.getAll({
                     owner: repository.getOwner(),
+                    per_page: 100,
                     repo: repository.getRepository(),
                 }).then((response) => {
                     return response.data;
