@@ -2,7 +2,7 @@
   "name": "amo-ugh",
   "author": "Nick Amoscato <nick@amoscato.com>",
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Command-line utilities for GitHub",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   "scripts": {
     "compile": "npm run lint && rm -rf bin/ && tsc",
     "lint": "tslint src/*.ts src/**/*.ts",
-    "prepack": "npm run compile",
+    "prepublish": "npm run compile",
     "start": "ts-node ./src/index.ts"
   },
   "files": [
