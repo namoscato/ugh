@@ -22,12 +22,12 @@ export default class Version {
         return this.toString() === ref;
     }
 
-    public getPrevious(): Version {
-        if (0 === this.minor) {
-            throw new Error('Major releases are currently not supported');
-        }
+    public getMajor(): number {
+        return this.major;
+    }
 
-        return new Version(this.major, this.minor - 1);
+    public getMinor(): number {
+        return this.minor;
     }
 
     public toString(): string {
