@@ -5,29 +5,35 @@ import * as input from './input';
 export default function(vorpal) {
 
     let defaultBranch: string;
+    let release: input.Release;
     let repository: input.Repository;
-    let newVersion: input.Version;
 
     interface IArguments {
+        options: {
+            previous?: string;
+        };
         repository: string;
         version: string;
     }
 
     vorpal
         .command('release:cleanup <repository> <version>')
+        .option('--previous <previous>', 'Optional previous version used during major releases')
         .description('Deprecate the previous branch lineage for the specified release version')
         .validate((args: IArguments) => {
             try {
                 repository = input.Repository.parse(args.repository);
-                newVersion = input.Version.parse(args.version);
+                release = input.Release.parse(args.version, args.options.previous);
                 return true;
             } catch (e) {
                 return e.message;
             }
         })
         .action(function(args, callback) {
-            const oldVersion = newVersion.getPrevious();
+            const newVersion = release.getVersion();
+            const oldVersion = release.getPreviousVersion();
 
+            this.log(`Initiating ${oldVersion}...${newVersion} release cleanup`);
             this.log(`Fetching ${repository} default branch`);
 
             return github.repos.get({

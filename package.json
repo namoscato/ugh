@@ -14,7 +14,7 @@
   "scripts": {
     "compile": "npm run lint && rm -rf bin/ && tsc",
     "lint": "tslint src/*.ts src/**/*.ts",
-    "prepublishOnly": "npm run compile",
+    "prepack": "npm run compile",
     "start": "ts-node ./src/index.ts"
   },
   "files": [
