@@ -2,7 +2,6 @@
 
 import * as Vorpal from 'vorpal';
 import * as commands from './command';
-import { github } from './github';
 
 const vorpal = Vorpal();
 

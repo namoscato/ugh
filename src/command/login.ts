@@ -1,12 +1,11 @@
-import * as Promise from 'bluebird';
 import { github } from './../github';
 
-export default function(vorpal) {
+export default function (vorpal) {
 
     vorpal
         .command('login')
         .description('Login to a GitHub account')
-        .action(function(args) {
+        .action(function (args) {
             return this.prompt({
                 message: 'Username: ',
                 name: 'username',

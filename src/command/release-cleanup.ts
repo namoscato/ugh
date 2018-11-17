@@ -1,10 +1,7 @@
-import * as Promise from 'bluebird';
 import github from './../github';
 import * as input from './input';
 
-export default function(vorpal) {
-
-    let defaultBranch: string;
+export default function (vorpal) {
     let release: input.Release;
     let repository: input.Repository;
 
@@ -29,7 +26,7 @@ export default function(vorpal) {
                 return e.message;
             }
         })
-        .action(function(args, callback) {
+        .action(function (args, callback) {
             const newVersion = release.getVersion();
             const oldVersion = release.getPreviousVersion();
 
@@ -39,12 +36,7 @@ export default function(vorpal) {
             return github.repos.get({
                 owner: repository.getOwner(),
                 repo: repository.getRepository(),
-            }).then((response) => {
-                defaultBranch = response.data.default_branch;
-                return response;
-            }, () => {
-                return Promise.reject(`Repository ${repository} does not exist`);
-            }).then(() => {
+            }).catch(() => Promise.reject(`Repository ${repository} does not exist`)).then(() => {
                 this.log(`Ensuring branch ${oldVersion} exists`);
 
                 return github.gitdata.getReference({
@@ -80,7 +72,7 @@ export default function(vorpal) {
                 });
 
                 return this.prompt({
-                    default: false,
+                    default: false, // tslint:disable-next-line:prefer-template max-line-length
                     message: `Are you sure you want to deprecate lineage ${oldVersion}? This will:\n\n` +
                         // tslint:disable-next-line:max-line-length
                         `\t1. Update the base branch of ${affectedPullRequests.length} pull request${1 === affectedPullRequests.length ? '' : 's'}\n` +
@@ -106,7 +98,7 @@ export default function(vorpal) {
                 });
 
                 return Promise.all(updatePromises).then(() => updatePromises.length);
-            }).then((pullRequestCount) => {
+            }).then(() => {
                 this.log(`Deleting branch ${oldVersion}`);
 
                 return github.gitdata.deleteReference({

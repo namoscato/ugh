@@ -1,4 +1,4 @@
-# ugh
+# ugh [![Build Status](https://travis-ci.org/namoscato/ugh.svg?branch=master)](https://travis-ci.org/namoscato/ugh)
 
 Command-line **u**tilities for **G**it**H**ub
 
