@@ -1,6 +1,12 @@
 {
-    "extends": "tslint:recommended",
-    "rules": {
-        "quotemark": [true, "single"]
-    }
+	"extends": "tslint-config-airbnb",
+	"rules": {
+		"ter-indent": [
+			true,
+			4,
+			{
+				"SwitchCase": 1
+			}
+		]
+	}
 }

@@ -1,5 +1,4 @@
-import * as Promise from 'bluebird';
-import * as GitHubClient from 'github';
+import * as GitHubClient from '@octokit/rest';
 import * as jsonfile from 'jsonfile';
 import * as os from 'os';
 import * as path from 'path';
@@ -15,9 +14,7 @@ class GitHub {
     private settings: ISettings;
 
     constructor() {
-        this.client = new GitHubClient({
-            Promise: Promise as any,
-        });
+        this.client = new GitHubClient();
 
         this.settings = jsonfile.readFileSync(SETTINGS_FILE, { throws: false }) || {};
 
@@ -32,13 +29,13 @@ class GitHub {
     public createAuthorization(username, password) {
         this.client.authenticate({
             password,
-            type: 'basic',
             username,
+            type: 'basic',
         });
 
         return this.client.authorization.create({
             note: 'Node Command-line Utilities',
-            note_url: 'https://github.com/namoscato',
+            note_url: 'https://github.com/namoscato/ugh',
             scopes: ['repo'],
         }).then((response) => {
             this.settings.token = response.data.token;

@@ -1,9 +1,8 @@
 {
     "compilerOptions": {
-        "lib": [
-            "ES6"
-        ],
-        "outDir": "./bin"
+        "moduleResolution": "Node",
+        "outDir": "./bin",
+        "target": "ES6"
     },
     "include": [
         "src/**/*"
