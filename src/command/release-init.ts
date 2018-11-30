@@ -1,80 +1,65 @@
 import github from './../github';
-import { Release, Repository } from './input';
-import { getBranch } from './utils';
-
-interface IArguments {
-    options: {
-        previous?: string;
-    };
-    repository: string;
-    version: string;
-}
+import { getBranch, IInput, validateInput } from './utils';
 
 export default function (vorpal) {
-    let release: Release;
-    let repository: Repository;
+    const input: Partial<IInput> = {};
 
     vorpal
         .command('release:init <repository> <version>')
         .option('--previous <previous>', 'Optional previous version used during major releases')
+        .option('--no-interaction', 'Do not ask any interactive questions')
         .description('Initialize the specified release version')
-        .validate((args: IArguments) => {
-            try {
-                repository = Repository.parse(args.repository);
-                release = Release.parse(args.version, args.options.previous);
-                return true;
-            } catch (e) {
-                return e.message;
-            }
-        })
+        .validate(validateInput(input))
         .action(async function () {
-            const newVersion = release.getVersion();
-            const oldVersion = release.getPreviousVersion();
+            const newVersion = input.release.getVersion();
+            const oldVersion = input.release.getPreviousVersion();
 
             this.log(`Initializing ${oldVersion}...${newVersion} release`);
 
             this.log(`Ensuring branch ${oldVersion} exists`);
-            await getBranch(repository, oldVersion, 'Previous');
+            await getBranch(input.repository, oldVersion, 'Previous');
 
             this.log(`Ensuring branch ${newVersion} does not exist`);
 
-            const newBranch = await getBranch(repository, newVersion).catch(() => null);
+            const newBranch = await getBranch(input.repository, newVersion).catch(() => null);
 
             if (newBranch) {
                 throw new Error(`New branch lineage ${newVersion} already exists`);
             }
 
-            const owner = repository.getOwner();
-            const repo = repository.getRepository();
+            const owner = input.repository.getOwner();
+            const repo = input.repository.getRepository();
 
-            this.log(`Fetching ${repository} default branch`);
+            this.log(`Fetching ${input.repository} default branch`);
 
             const defaultBranch = await github.repos.get({ owner, repo }).then((response) => {
                 return response.data.default_branch;
             });
 
-            const promptResponse = await this.prompt({
-                default: false, // tslint:disable-next-line:prefer-template
-                message: `Are you sure you want to initialize lineage ${newVersion}? This will:\n\n` +
-                    // tslint:disable-next-line:max-line-length
-                    `\t1. Merge ${oldVersion} into ${defaultBranch}\n` +
-                    `\t2. Create ${newVersion}\n\n` +
-                    'Proceed?',
-                name: 'proceed',
-                type: 'confirm',
-            });
+            if (input.interaction) {
+                const promptResponse = await this.prompt({
+                    default: false, // tslint:disable-next-line:prefer-template
+                    message: `Are you sure you want to initialize lineage ${newVersion}? This will:\n\n` +
+                        // tslint:disable-next-line:max-line-length
+                        `\t1. Merge ${oldVersion} into ${defaultBranch}\n` +
+                        `\t2. Create ${newVersion}\n\n` +
+                        'Proceed?',
+                    name: 'proceed',
+                    type: 'confirm',
+                });
 
-            if (!promptResponse.proceed) {
-                throw new Error('User aborted action');
+                if (!promptResponse.proceed) {
+                    throw new Error('User aborted action');
+                }
             }
 
             this.log(`Merging ${oldVersion} into ${defaultBranch}`);
 
             const merge = await github.repos.merge({
+                owner,
+                repo,
                 base: defaultBranch,
                 head: oldVersion.toString(),
-                owner: repository.getOwner(),
-                repo: repository.getRepository(),
             }).then(response => response.data);
 
             let sha: string;
@@ -85,9 +70,9 @@ export default function (vorpal) {
                 this.log(`Fetching latest ${defaultBranch} commit`);
 
                 sha = await github.gitdata.getReference({
-                    owner: repository.getOwner(),
+                    owner,
+                    repo,
                     ref: `heads/${defaultBranch}`,
-                    repo: repository.getRepository(),
                 }).then(response => response.data.object.sha);
             }
 
