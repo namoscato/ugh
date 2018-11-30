@@ -1,17 +1,18 @@
 import github from './../github';
-import * as input from './input';
+import { Release, Repository } from './input';
+import { getBranch } from './utils';
+
+interface IArguments {
+    options: {
+        previous?: string;
+    };
+    repository: string;
+    version: string;
+}
 
 export default function (vorpal) {
-    let release: input.Release;
-    let repository: input.Repository;
-
-    interface IArguments {
-        options: {
-            previous?: string;
-        };
-        repository: string;
-        version: string;
-    }
+    let release: Release;
+    let repository: Repository;
 
     vorpal
         .command('release:cleanup <repository> <version>')
@@ -19,95 +20,76 @@ export default function (vorpal) {
         .description('Deprecate the previous branch lineage for the specified release version')
         .validate((args: IArguments) => {
             try {
-                repository = input.Repository.parse(args.repository);
-                release = input.Release.parse(args.version, args.options.previous);
+                repository = Repository.parse(args.repository);
+                release = Release.parse(args.version, args.options.previous);
                 return true;
             } catch (e) {
                 return e.message;
             }
         })
-        .action(function (args, callback) {
+        .action(async function () {
             const newVersion = release.getVersion();
             const oldVersion = release.getPreviousVersion();
 
             this.log(`Initiating ${oldVersion}...${newVersion} release cleanup`);
-            this.log(`Fetching ${repository} default branch`);
 
-            return github.repos.get({
-                owner: repository.getOwner(),
-                repo: repository.getRepository(),
-            }).catch(() => Promise.reject(`Repository ${repository} does not exist`)).then(() => {
-                this.log(`Ensuring branch ${oldVersion} exists`);
+            this.log(`Ensuring branch ${oldVersion} exists`);
+            await getBranch(repository, oldVersion, 'Previous');
 
-                return github.gitdata.getReference({
-                    owner: repository.getOwner(),
-                    ref: `heads/${oldVersion}`,
-                    repo: repository.getRepository(),
-                }).catch(() => {
-                    return Promise.reject(`Previous branch lineage ${oldVersion} does not exist`);
-                });
-            }).then(() => {
-                this.log(`Ensuring branch ${newVersion} exists`);
+            this.log(`Ensuring branch ${newVersion} exists`);
+            await getBranch(repository, newVersion, 'New');
 
-                return github.gitdata.getReference({
-                    owner: repository.getOwner(),
-                    ref: `heads/${newVersion}`,
-                    repo: repository.getRepository(),
-                }).catch(() => {
-                    return Promise.reject(`New branch lineage ${newVersion} does not exist`);
-                });
-            }).then(() => {
-                this.log(`Fetching pull requests affected by ${oldVersion} -> ${newVersion}`);
+            const owner = repository.getOwner();
+            const repo = repository.getRepository();
 
-                return github.pullRequests.getAll({
-                    owner: repository.getOwner(),
-                    per_page: 100,
-                    repo: repository.getRepository(),
-                }).then((response) => {
-                    return response.data;
-                });
-            }).then((pullRequests) => {
-                const affectedPullRequests = pullRequests.filter((pullRequest) => {
-                    return oldVersion.equals(pullRequest.base.ref as string);
-                });
+            this.log(`Fetching pull requests affected by ${oldVersion} -> ${newVersion}`);
 
-                return this.prompt({
-                    default: false, // tslint:disable-next-line:prefer-template max-line-length
-                    message: `Are you sure you want to deprecate lineage ${oldVersion}? This will:\n\n` +
-                        // tslint:disable-next-line:max-line-length
-                        `\t1. Update the base branch of ${affectedPullRequests.length} pull request${1 === affectedPullRequests.length ? '' : 's'}\n` +
-                        `\t2. Delete ${oldVersion}\n\n` +
-                        'Proceed?',
-                    name: 'proceed',
-                    type: 'confirm',
-                }).then((response) => {
-                    return response.proceed ? affectedPullRequests : Promise.reject(null);
-                });
-            }).then((pullRequests) => {
-                const updatePromises = [];
+            const pullRequests = await github.pullRequests.getAll({
+                owner,
+                repo,
+                per_page: 100,
+            }).then(response => response.data);
 
-                pullRequests.forEach((pullRequest) => {
-                    this.log(`Updating base of #${pullRequest.number} ${pullRequest.title}`);
+            const affectedPullRequests = pullRequests.filter((pullRequest) => {
+                return oldVersion.equals(pullRequest.base.ref as string);
+            });
 
-                    updatePromises.push(github.pullRequests.update({
-                        base: String(newVersion),
-                        number: pullRequest.number,
-                        owner: repository.getOwner(),
-                        repo: repository.getRepository(),
-                    }));
-                });
+            const promptResponse = await this.prompt({
+                default: false, // tslint:disable-next-line:prefer-template
+                message: `Are you sure you want to deprecate lineage ${oldVersion}? This will:\n\n` +
+                    // tslint:disable-next-line:max-line-length
+                    `\t1. Update the base branch of ${affectedPullRequests.length} pull request${1 === affectedPullRequests.length ? '' : 's'}\n` +
+                    `\t2. Delete ${oldVersion}\n\n` +
+                    'Proceed?',
+                name: 'proceed',
+                type: 'confirm',
+            });
 
-                return Promise.all(updatePromises).then(() => updatePromises.length);
-            }).then(() => {
-                this.log(`Deleting branch ${oldVersion}`);
+            if (!promptResponse.proceed) {
+                throw new Error('User aborted action');
+            }
 
-                return github.gitdata.deleteReference({
-                    owner: repository.getOwner(),
-                    ref: `heads/${oldVersion}`,
-                    repo: repository.getRepository(),
-                });
-            }).catch((message) => {
-                return Promise.reject(new Error(message ? message : 'User aborted action'));
+            const updatePromises = [];
+
+            pullRequests.forEach((pullRequest) => {
+                this.log(`Updating base of #${pullRequest.number} ${pullRequest.title}`);
+
+                updatePromises.push(github.pullRequests.update({
+                    owner,
+                    repo,
+                    base: String(newVersion),
+                    number: pullRequest.number,
+                }));
+            });
+
+            await Promise.all(updatePromises);
+
+            this.log(`Deleting branch ${oldVersion}`);
+
+            return await github.gitdata.deleteReference({
+                owner,
+                repo,
+                ref: `heads/${oldVersion}`,
             });
         });
 }

@@ -20,6 +20,10 @@ ugh <command>
 
 Login to a GitHub account
 
+### `release:init <repository> <version> [--previous <previous>]`
+
+Initialize the specified release version
+
 ### `release:cleanup <repository> <version> [--previous <previous>]`
 
 Deprecate the previous branch lineage for the specified release version
