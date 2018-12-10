@@ -56,7 +56,7 @@ export default function (vorpal) {
 
             const updatePromises = [];
 
-            pullRequests.forEach((pullRequest) => {
+            affectedPullRequests.forEach((pullRequest) => {
                 this.log(`Updating base of #${pullRequest.number} ${pullRequest.title}`);
 
                 updatePromises.push(github.pullRequests.update({
