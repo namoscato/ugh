@@ -27,7 +27,7 @@ export default function (vorpal) {
 
             this.log(`Fetching pull requests affected by ${oldVersion} -> ${newVersion}`);
 
-            const pullRequests = await github.pullRequests.getAll({
+            const pullRequests = await github.pulls.list({
                 owner,
                 repo,
                 per_page: 100,
@@ -59,7 +59,7 @@ export default function (vorpal) {
             affectedPullRequests.forEach((pullRequest) => {
                 this.log(`Updating base of #${pullRequest.number} ${pullRequest.title}`);
 
-                updatePromises.push(github.pullRequests.update({
+                updatePromises.push(github.pulls.update({
                     owner,
                     repo,
                     base: String(newVersion),
@@ -71,7 +71,7 @@ export default function (vorpal) {
 
             this.log(`Deleting branch ${oldVersion}`);
 
-            return await github.gitdata.deleteReference({
+            return await github.git.deleteRef({
                 owner,
                 repo,
                 ref: `heads/${oldVersion}`,

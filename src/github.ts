@@ -33,8 +33,8 @@ class GitHub {
             type: 'basic',
         });
 
-        return this.client.authorization.create({
-            note: 'Node Command-line Utilities',
+        return this.client.oauthAuthorizations.createAuthorization({
+            note: 'Node Command-line Utilities 2',
             note_url: 'https://github.com/namoscato/ugh',
             scopes: ['repo'],
         }).then((response) => {
