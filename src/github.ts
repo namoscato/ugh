@@ -34,7 +34,7 @@ class GitHub {
         });
 
         return this.client.oauthAuthorizations.createAuthorization({
-            note: 'Node Command-line Utilities 2',
+            note: 'Node Command-line Utilities',
             note_url: 'https://github.com/namoscato/ugh',
             scopes: ['repo'],
         }).then((response) => {
