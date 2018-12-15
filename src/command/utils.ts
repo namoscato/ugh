@@ -21,10 +21,14 @@ export interface IInput {
  */
 export async function getBranch(repository: Repository, version: Version, branchQualifier: string = '') {
     try {
-        return await github.gitdata.getReference({
+        return await github.git.getRef({
             owner: repository.getOwner(),
             ref: `heads/${version}`,
             repo: repository.getRepository(),
+        }).then((response) => {
+            if (response.data instanceof Array) {
+                return Promise.reject(null);
+            }
         });
     } catch (e) {
         throw new Error(`${branchQualifier} branch lineage ${version} does not exist`);

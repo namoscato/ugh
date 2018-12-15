@@ -69,7 +69,7 @@ export default function (vorpal) {
             } else {
                 this.log(`Fetching latest ${defaultBranch} commit`);
 
-                sha = await github.gitdata.getReference({
+                sha = await github.git.getRef({
                     owner,
                     repo,
                     ref: `heads/${defaultBranch}`,
@@ -78,7 +78,7 @@ export default function (vorpal) {
 
             this.log(`Creating branch ${newVersion}`);
 
-            return github.gitdata.createReference({
+            return github.git.createRef({
                 owner,
                 repo,
                 sha,
