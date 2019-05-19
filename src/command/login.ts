@@ -1,4 +1,4 @@
-import { github } from './../github';
+import github from './../github';
 
 export default function (vorpal) {
     vorpal
@@ -16,6 +16,19 @@ export default function (vorpal) {
                 type: 'password',
             });
 
-            return github.createAuthorization(input1.username, input2.password);
+            return github.createAuthorization(
+                input1.username,
+                input2.password,
+                () => {
+                    return this.prompt({
+                        message: 'Two-factor authentication Code: ',
+                        name: 'code',
+                        type: 'password',
+                    }).then((input: any) => {
+                        console.log(input)
+                        return input.code;
+                    });
+                },
+            );
         });
 }

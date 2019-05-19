@@ -11,6 +11,7 @@ export default function (vorpal) {
         .description('Deprecate the previous branch lineage for the specified release version')
         .validate(validateInput(input))
         .action(async function () {
+            const githubClient = github.getClient();
             const newVersion = input.release.getVersion();
             const oldVersion = input.release.getPreviousVersion();
 
@@ -27,7 +28,7 @@ export default function (vorpal) {
 
             this.log(`Fetching pull requests affected by ${oldVersion} -> ${newVersion}`);
 
-            const pullRequests = await github.pulls.list({
+            const pullRequests = await githubClient.pulls.list({
                 owner,
                 repo,
                 per_page: 100,
@@ -59,7 +60,7 @@ export default function (vorpal) {
             affectedPullRequests.forEach((pullRequest) => {
                 this.log(`Updating base of #${pullRequest.number} ${pullRequest.title}`);
 
-                updatePromises.push(github.pulls.update({
+                updatePromises.push(githubClient.pulls.update({
                     owner,
                     repo,
                     base: String(newVersion),
@@ -71,7 +72,7 @@ export default function (vorpal) {
 
             this.log(`Deleting branch ${oldVersion}`);
 
-            return await github.git.deleteRef({
+            return await githubClient.git.deleteRef({
                 owner,
                 repo,
                 ref: `heads/${oldVersion}`,
