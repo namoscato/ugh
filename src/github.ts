@@ -14,26 +14,19 @@ class GitHub {
     private settings: ISettings;
 
     constructor() {
-        this.client = new GitHubClient();
-
         this.settings = jsonfile.readFileSync(SETTINGS_FILE, { throws: false }) || {};
-
-        if (this.isAuthenticated()) {
-            this.client.authenticate({
-                token: this.settings.token,
-                type: 'token',
-            });
-        }
     }
 
-    public createAuthorization(username, password) {
-        this.client.authenticate({
-            password,
-            username,
-            type: 'basic',
+    public createAuthorization(username: string, password: string, on2fa: () => Promise<string>) {
+        const client = new GitHubClient({
+            auth: {
+                on2fa,
+                password,
+                username,
+            },
         });
 
-        return this.client.oauthAuthorizations.createAuthorization({
+        return client.oauthAuthorizations.createAuthorization({
             note: 'Node Command-line Utilities',
             note_url: 'https://github.com/namoscato/ugh',
             scopes: ['repo'],
@@ -44,6 +37,16 @@ class GitHub {
     }
 
     public getClient() {
+        if ('undefined' === typeof this.client) {
+            const options: GitHubClient.Options = {};
+
+            if (this.isAuthenticated()) {
+                options.auth = `token ${this.settings.token}`;
+            }
+
+            this.client = new GitHubClient(options);
+        }
+
         return this.client;
     }
 
@@ -52,5 +55,4 @@ class GitHub {
     }
 }
 
-export const github = new GitHub();
-export default github.getClient();
+export default new GitHub();

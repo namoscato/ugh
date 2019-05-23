@@ -11,6 +11,7 @@ export default function (vorpal) {
         .description('Initialize the specified release version')
         .validate(validateInput(input))
         .action(async function () {
+            const githubClient = github.getClient();
             const newVersion = input.release.getVersion();
             const oldVersion = input.release.getPreviousVersion();
 
@@ -32,7 +33,7 @@ export default function (vorpal) {
 
             this.log(`Fetching ${input.repository} default branch`);
 
-            const defaultBranch = await github.repos.get({ owner, repo }).then((response) => {
+            const defaultBranch = await githubClient.repos.get({ owner, repo }).then((response) => {
                 return response.data.default_branch;
             });
 
@@ -55,7 +56,7 @@ export default function (vorpal) {
 
             this.log(`Merging ${oldVersion} into ${defaultBranch}`);
 
-            const merge = await github.repos.merge({
+            const merge = await githubClient.repos.merge({
                 owner,
                 repo,
                 base: defaultBranch,
@@ -69,7 +70,7 @@ export default function (vorpal) {
             } else {
                 this.log(`Fetching latest ${defaultBranch} commit`);
 
-                sha = await github.git.getRef({
+                sha = await githubClient.git.getRef({
                     owner,
                     repo,
                     ref: `heads/${defaultBranch}`,
@@ -78,7 +79,7 @@ export default function (vorpal) {
 
             this.log(`Creating branch ${newVersion}`);
 
-            return github.git.createRef({
+            return githubClient.git.createRef({
                 owner,
                 repo,
                 sha,

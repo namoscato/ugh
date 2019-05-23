@@ -21,7 +21,7 @@ export interface IInput {
  */
 export async function getBranch(repository: Repository, version: Version, branchQualifier: string = '') {
     try {
-        return await github.git.getRef({
+        return await github.getClient().git.getRef({
             owner: repository.getOwner(),
             ref: `heads/${version}`,
             repo: repository.getRepository(),
