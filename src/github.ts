@@ -44,8 +44,6 @@ class GitHub {
                 options.auth = `token ${this.settings.token}`;
             }
 
-            console.log(options)
-
             this.client = new GitHubClient(options);
         }
 

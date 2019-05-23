@@ -64,7 +64,7 @@ export default function (vorpal) {
                     owner,
                     repo,
                     base: String(newVersion),
-                    number: pullRequest.number,
+                    pull_number: pullRequest.number,
                 }));
             });
 

@@ -25,7 +25,6 @@ export default function (vorpal) {
                         name: 'code',
                         type: 'password',
                     }).then((input: any) => {
-                        console.log(input)
                         return input.code;
                     });
                 },
