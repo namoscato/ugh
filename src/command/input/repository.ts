@@ -1,5 +1,3 @@
-import Version from './version';
-
 export default class Repository {
 
     public static parse(versionString: string): Repository {

@@ -1,7 +1,7 @@
-import github from './../github';
+import github from '../github';
 import { getBranch, IInput, validateInput } from './utils';
 
-export default function (vorpal) {
+export default function releaseCleanup(vorpal) {
     const input: Partial<IInput> = {};
 
     vorpal
@@ -10,7 +10,7 @@ export default function (vorpal) {
         .option('--no-interaction', 'Do not ask any interactive questions')
         .description('Deprecate the previous branch lineage for the specified release version')
         .validate(validateInput(input))
-        .action(async function () {
+        .action(async function action() {
             const githubClient = github.getClient();
             const newVersion = input.release.getVersion();
             const oldVersion = input.release.getPreviousVersion();
@@ -32,20 +32,19 @@ export default function (vorpal) {
                 owner,
                 repo,
                 per_page: 100,
-            }).then(response => response.data);
+            }).then((response) => response.data);
 
-            const affectedPullRequests = pullRequests.filter((pullRequest) => {
-                return oldVersion.equals(pullRequest.base.ref as string);
-            });
+            const affectedPullRequests = pullRequests.filter(
+                (pullRequest) => oldVersion.equals(pullRequest.base.ref as string),
+            );
 
             if (input.interaction) {
                 const promptResponse = await this.prompt({
-                    default: false, // tslint:disable-next-line:prefer-template
-                    message: `Are you sure you want to deprecate lineage ${oldVersion}? This will:\n\n` +
-                        // tslint:disable-next-line:max-line-length
-                        `\t1. Update the base branch of ${affectedPullRequests.length} pull request${1 === affectedPullRequests.length ? '' : 's'}\n` +
-                        `\t2. Delete ${oldVersion}\n\n` +
-                        'Proceed?',
+                    default: false,
+                    message: `Are you sure you want to deprecate lineage ${oldVersion}? This will:\n\n`
+                        + `\t1. Update the base branch of ${affectedPullRequests.length} pull request${1 === affectedPullRequests.length ? '' : 's'}\n`
+                        + `\t2. Delete ${oldVersion}\n\n`
+                        + 'Proceed?',
                     name: 'proceed',
                     type: 'confirm',
                 });
@@ -72,7 +71,7 @@ export default function (vorpal) {
 
             this.log(`Deleting branch ${oldVersion}`);
 
-            return await githubClient.git.deleteRef({
+            return githubClient.git.deleteRef({
                 owner,
                 repo,
                 ref: `heads/${oldVersion}`,

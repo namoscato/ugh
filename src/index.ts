@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 import * as Vorpal from 'vorpal';
-import * as commands from './command';
+import login from './command/login';
+import releaseCleanup from './command/release-cleanup';
+import releaseInit from './command/release-init';
 
 const vorpal = Vorpal();
 
-for (const i in commands) {
-    if (commands.hasOwnProperty(i) && 'function' === typeof commands[i]) {
-        commands[i](vorpal);
-    }
-}
+login(vorpal);
+releaseCleanup(vorpal);
+releaseInit(vorpal);
 
 vorpal
     .on('client_command_executed', () => process.exit(0))

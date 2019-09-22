@@ -1,7 +1,7 @@
-import github from './../github';
+import github from '../github';
 import { getBranch, IInput, validateInput } from './utils';
 
-export default function (vorpal) {
+export default function releaseInit(vorpal) {
     const input: Partial<IInput> = {};
 
     vorpal
@@ -10,7 +10,7 @@ export default function (vorpal) {
         .option('--no-interaction', 'Do not ask any interactive questions')
         .description('Initialize the specified release version')
         .validate(validateInput(input))
-        .action(async function () {
+        .action(async function action() {
             const githubClient = github.getClient();
             const newVersion = input.release.getVersion();
             const oldVersion = input.release.getPreviousVersion();
@@ -33,18 +33,17 @@ export default function (vorpal) {
 
             this.log(`Fetching ${input.repository} default branch`);
 
-            const defaultBranch = await githubClient.repos.get({ owner, repo }).then((response) => {
-                return response.data.default_branch;
-            });
+            const defaultBranch = await githubClient.repos.get({ owner, repo }).then(
+                (response) => response.data.default_branch,
+            );
 
             if (input.interaction) {
                 const promptResponse = await this.prompt({
-                    default: false, // tslint:disable-next-line:prefer-template
-                    message: `Are you sure you want to initialize lineage ${newVersion}? This will:\n\n` +
-                        // tslint:disable-next-line:max-line-length
-                        `\t1. Merge ${oldVersion} into ${defaultBranch}\n` +
-                        `\t2. Create ${newVersion}\n\n` +
-                        'Proceed?',
+                    default: false,
+                    message: `Are you sure you want to initialize lineage ${newVersion}? This will:\n\n`
+                        + `\t1. Merge ${oldVersion} into ${defaultBranch}\n`
+                        + `\t2. Create ${newVersion}\n\n`
+                        + 'Proceed?',
                     name: 'proceed',
                     type: 'confirm',
                 });
@@ -61,7 +60,7 @@ export default function (vorpal) {
                 repo,
                 base: defaultBranch,
                 head: oldVersion.toString(),
-            }).then(response => response.data);
+            }).then((response) => response.data);
 
             let sha: string;
 
@@ -74,7 +73,7 @@ export default function (vorpal) {
                     owner,
                     repo,
                     ref: `heads/${defaultBranch}`,
-                }).then(response => response.data.object.sha);
+                }).then((response) => response.data.object.sha);
             }
 
             this.log(`Creating branch ${newVersion}`);

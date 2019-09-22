@@ -11,6 +11,7 @@ interface ISettings {
 
 class GitHub {
     private client: GitHubClient;
+
     private settings: ISettings;
 
     constructor() {

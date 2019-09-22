@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import github from '../github';
 import { Repository, Version, Release } from './input';
 
@@ -27,8 +28,10 @@ export async function getBranch(repository: Repository, version: Version, branch
             repo: repository.getRepository(),
         }).then((response) => {
             if (response.data instanceof Array) {
-                return Promise.reject(null);
+                return Promise.reject(null); // eslint-disable-line prefer-promise-reject-errors
             }
+
+            return response;
         });
     } catch (e) {
         throw new Error(`${branchQualifier} branch lineage ${version} does not exist`);
@@ -39,7 +42,7 @@ export async function getBranch(repository: Repository, version: Version, branch
  * Returns a function that validates the user input
  */
 export function validateInput(input: Partial<IInput>) {
-    return function (args: IArguments) {
+    return function validate(args: IArguments) {
         try {
             input.interaction = args.options.interaction;
 
