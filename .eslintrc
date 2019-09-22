@@ -1,0 +1,15 @@
+{
+    "extends": [
+        "airbnb-base",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "plugins": ["@typescript-eslint"],
+    "parser": "@typescript-eslint/parser",
+    "rules": {
+        "@typescript-eslint/camelcase": "off",
+        "@typescript-eslint/interface-name-prefix": ["error", { "prefixWithI": "always" }],
+        "import/no-unresolved": 0,
+        "indent": ["error", 4, { "SwitchCase": 1 }],
+        "yoda": ["error", "always"]
+    }
+}

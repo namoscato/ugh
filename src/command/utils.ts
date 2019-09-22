@@ -20,7 +20,7 @@ export interface IInput {
 /**
  * Returns the lineage branch for the specified version
  */
-export async function getBranch(repository: Repository, version: Version, branchQualifier: string = '') {
+export async function getBranch(repository: Repository, version: Version, branchQualifier = '') {
     try {
         return await github.getClient().git.getRef({
             owner: repository.getOwner(),
