@@ -1,4 +1,4 @@
-# ugh [![Build Status](https://travis-ci.org/namoscato/ugh.svg?branch=master)](https://travis-ci.org/namoscato/ugh)
+# ugh [![Actions Status](https://github.com/namoscato/ugh/workflows/Node%20CI/badge.svg)](https://github.com/namoscato/ugh/actions)
 
 Command-line **u**tilities for **G**it**H**ub
 
