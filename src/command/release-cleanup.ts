@@ -1,7 +1,7 @@
 import github from '../github';
 import { getBranch, IInput, validateInput } from './utils';
 
-export default function releaseCleanup(vorpal) {
+export default function releaseCleanup(vorpal): void {
     const input: Partial<IInput> = {};
 
     vorpal
