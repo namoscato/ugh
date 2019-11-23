@@ -12,13 +12,14 @@ interface ISettings {
 class GitHub {
     private client: GitHubClient;
 
-    private settings: ISettings;
+    private readonly settings: ISettings;
 
     constructor() {
         this.settings = jsonfile.readFileSync(SETTINGS_FILE, { throws: false }) || {};
     }
 
-    public createAuthorization(username: string, password: string, on2fa: () => Promise<string>) {
+    // eslint-disable-next-line max-len
+    public createAuthorization(username: string, password: string, on2fa: () => Promise<string>): Promise<void> {
         const client = new GitHubClient({
             auth: {
                 on2fa,
@@ -37,7 +38,7 @@ class GitHub {
         });
     }
 
-    public getClient() {
+    public getClient(): GitHubClient {
         if ('undefined' === typeof this.client) {
             const options: GitHubClient.Options = {};
 

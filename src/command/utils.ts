@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
+import * as Octokit from '@octokit/rest';
 import github from '../github';
-import { Repository, Version, Release } from './input';
+import { Release, Repository, Version } from './input';
 
 interface IArguments {
     options: {
@@ -20,7 +21,7 @@ export interface IInput {
 /**
  * Returns the lineage branch for the specified version
  */
-export async function getBranch(repository: Repository, version: Version, branchQualifier = '') {
+export async function getBranch(repository: Repository, version: Version, branchQualifier = ''): Promise<Octokit.Response<Octokit.GitGetRefResponse>> {
     try {
         return await github.getClient().git.getRef({
             owner: repository.getOwner(),
@@ -42,7 +43,7 @@ export async function getBranch(repository: Repository, version: Version, branch
  * Returns a function that validates the user input
  */
 export function validateInput(input: Partial<IInput>) {
-    return function validate(args: IArguments) {
+    return function validate(args: IArguments): boolean|string {
         try {
             input.interaction = args.options.interaction;
 
