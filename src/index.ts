@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 
 import * as Vorpal from 'vorpal';
-import login from './command/login';
-import releaseCleanup from './command/release-cleanup';
-import releaseInit from './command/release-init';
+import pullRequest from './command/pull-request';
 
 const vorpal = Vorpal();
 
-login(vorpal);
-releaseCleanup(vorpal);
-releaseInit(vorpal);
+pullRequest(vorpal);
 
 vorpal
     .on('client_command_executed', () => process.exit(0))
