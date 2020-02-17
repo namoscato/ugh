@@ -17,6 +17,7 @@ export default function pullRequest(vorpal): void {
     vorpal
         .command(`${COMMAND} <template> <head> <message>`)
         .option('-b, --base <base>', 'The base branch in the "[OWNER:]BRANCH" format. Defaults to the default branch of the upstream repository (usually "master").')
+        .description('Create a <base>...<head> pull request across repositories with the specified <message>')
         .validate((input) => {
             const { template } = input;
 
@@ -27,7 +28,7 @@ export default function pullRequest(vorpal): void {
         .action(async function action(args) {
             const { head } = args;
 
-            const repos = Object.keys(config.repos).map((dir) => ('~' === dir[0] ? join(process.env.HOME, dir.slice(1)) : dir)).filter((cwd) => {
+            const repos = config.repos.map((dir) => ('~' === dir[0] ? join(process.env.HOME, dir.slice(1)) : dir)).filter((cwd) => {
                 this.log(`[${cwd}] Checking if branch '${head}' exists`);
 
                 const ref = spawnSync(
@@ -40,8 +41,7 @@ export default function pullRequest(vorpal): void {
             });
 
             if (0 === repos.length) {
-                this.log(`Branch '${head}' does not exist in any of the configured repositories`);
-                return;
+                throw new Error(`Branch '${head}' does not exist in any of the configured repositories`);
             }
 
             const prompt = await this.prompt({

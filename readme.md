@@ -8,6 +8,14 @@ Command-line **u**tilities for **G**it**H**ub
 npm i -g amo-ugh
 ```
 
+### Dependencies
+
+This utility depends on [hub](https://hub.github.com/), which must also be installed.
+
+### Configuration
+
+Command-specific configuration is defined in an `~/.amo-ugh` JSON file located in the user's home directory.
+
 ## Usage
 
 ```
@@ -16,14 +24,24 @@ ugh <command>
 
 ## Commands
 
-### `login`
+### `pull-request [--base <base>] <template> <head> <message>`
 
-Login to a GitHub account
+Create a `<base>...<head>` pull request across repositories with the specified `<message>` where `<template>` references a configuration property, i.e.
 
-### `release:init <repository> <version> [--previous <previous>]`
+```json
+{
+  "pull-request": {
+    "my-template": {
+      "defaults": {
+        "assign": "namoscato",
+        "labels": "automation"
+      },
+      "repos": [
+        "~/dev/git/ugh"
+      ]
+    }
+  }
+}
+```
 
-Initialize the specified release version
-
-### `release:cleanup <repository> <version> [--previous <previous>]`
-
-Deprecate the previous branch lineage for the specified release version
+_See [`hub-pull-request`](https://hub.github.com/hub-pull-request.1.html)_
