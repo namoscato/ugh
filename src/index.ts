@@ -4,10 +4,12 @@ import * as Vorpal from 'vorpal';
 import login from './command/login';
 import releaseCleanup from './command/release-cleanup';
 import releaseInit from './command/release-init';
+import pullRequest from './command/pull-request';
 
 const vorpal = Vorpal();
 
 login(vorpal);
+pullRequest(vorpal);
 releaseCleanup(vorpal);
 releaseInit(vorpal);
 
