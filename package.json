@@ -14,7 +14,7 @@
   "scripts": {
     "compile": "rm -rf bin/ && tsc",
     "lint": "eslint src/*.ts src/**/*.ts",
-    "prepublish": "npm run compile",
+    "prepare": "npm run compile",
     "start": "ts-node ./src/index.ts"
   },
   "files": [
