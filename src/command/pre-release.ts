@@ -18,7 +18,14 @@ class PreReleaseConfiguration implements IMultipleRepositoryConfiguration {
 }
 
 interface IPullRequest {
+    head: IPullRequestBranch;
+    number: number;
+    title: string;
     url: string;
+}
+
+interface IPullRequestBranch {
+    sha: string;
 }
 
 export default function preRelease(vorpal): void {
@@ -40,6 +47,7 @@ export default function preRelease(vorpal): void {
                 let pr;
 
                 if (!isFinalizeStep) {
+                    // 1. Find and merge the pull request.
                     this.log(`[${cwd}] Checking if pull request for ticket '${ticket}' exists`);
 
                     const prList = Hub.api<IPullRequest[]>(
@@ -68,8 +76,10 @@ export default function preRelease(vorpal): void {
                     );
 
                     this.log(`[${cwd}] Merged`);
+                    // End Step 1
                 }
 
+                // 2. Determine the target release.
                 const releaseList = Hub.run(
                     ['release', '-f', '%T', '--exclude-prereleases', '-L', '1'],
                     cwd,
@@ -78,7 +88,9 @@ export default function preRelease(vorpal): void {
                 const previousRelease = releaseList || '1.0.0';
                 const semver = new SemVer(previousRelease);
                 const newRelease = semver.inc(type);
+                // End Step 2
 
+                // 3. Determine if the target release has already been created as a draft.
                 this.log(`[${cwd}] Checking if release '${newRelease}' exists`);
 
                 const draftReleaseList = Hub.run(
@@ -86,7 +98,11 @@ export default function preRelease(vorpal): void {
                     cwd,
                 );
 
-                if (draftReleaseList.startsWith(`draft ${newRelease} `)) {
+                const newReleaseExists = draftReleaseList.startsWith(`draft ${newRelease} `);
+                // End Step 3
+
+                // 4. If the target release exists as a draft, update it; if not, create it.
+                if (newReleaseExists) {
                     this.log(`[${cwd}] Updating release '${newRelease}'`);
 
                     const tag = draftReleaseList.split(' ')[2];
@@ -158,6 +174,7 @@ export default function preRelease(vorpal): void {
 
                     this.log(`[${cwd}] Created`);
                 }
+                // End Step 4
             });
         });
 }
