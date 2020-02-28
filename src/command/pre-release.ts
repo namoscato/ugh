@@ -1,7 +1,6 @@
 import { spawnSync } from 'child_process';
-import { join } from 'path';
 import * as SemVer from 'semver/classes/semver';
-import settings from '../settings';
+import settings, { IMultipleRepositoryConfiguration } from '../settings';
 
 const COMMAND = 'pre-release';
 
@@ -14,7 +13,7 @@ const RELEASE_TYPES = [
     'minor',
 ];
 
-class PreReleaseConfiguration {
+class PreReleaseConfiguration implements IMultipleRepositoryConfiguration {
     public repos: string[];
 }
 
@@ -31,9 +30,9 @@ export default function preRelease(vorpal): void {
         .action(function action(args) {
             const { ticket } = args;
             const config = settings.get<PreReleaseConfiguration>(COMMAND);
-            const isFinalizeStep = ticket === FINALIZE_KEYWORD;
+            const isFinalizeStep = (ticket === FINALIZE_KEYWORD);
 
-            config.repos.map((dir) => ('~' === dir[0] ? join(process.env.HOME, dir.slice(1)) : dir)).forEach((cwd) => {
+            settings.getAbsoluteRepositoryPaths(config).forEach((cwd) => {
                 let pr;
 
                 if (!isFinalizeStep) {
