@@ -1,5 +1,5 @@
-import { spawnSync } from 'child_process';
 import * as SemVer from 'semver/classes/semver';
+import Hub from '../hub';
 import settings, { IMultipleRepositoryConfiguration } from '../settings';
 
 const COMMAND = 'pre-release';
@@ -15,6 +15,10 @@ const RELEASE_TYPES = [
 
 class PreReleaseConfiguration implements IMultipleRepositoryConfiguration {
     public repos: string[];
+}
+
+interface IPullRequest {
+    url: string;
 }
 
 export default function preRelease(vorpal): void {
@@ -38,29 +42,20 @@ export default function preRelease(vorpal): void {
                 if (!isFinalizeStep) {
                     this.log(`[${cwd}] Checking if pull request for ticket '${ticket}' exists`);
 
-                    const prListCmd = spawnSync(
-                        'hub',
-                        ['api', `repos/{owner}/{repo}/pulls?head={owner}:${ticket}&base=${DEFAULT_BRANCH}`],
-                        { cwd },
+                    const prList = Hub.api<IPullRequest[]>(
+                        [`repos/{owner}/{repo}/pulls?head={owner}:${ticket}&base=${DEFAULT_BRANCH}`],
+                        cwd,
                     );
 
-                    if (0 !== prListCmd.status) {
-                        throw new Error(prListCmd.stderr.toString());
-                    }
-
-                    const prListResponse = JSON.parse(prListCmd.stdout.toString());
-
-                    if (0 === prListResponse.length) {
+                    if (0 === prList.length) {
                         return;
                     }
 
-                    pr = prListResponse[0];
+                    [pr] = prList;
                     this.log(`[${cwd}] Merging pull request ${pr.url}`);
 
-                    const prMergeCmd = spawnSync(
-                        'hub',
+                    Hub.api(
                         [
-                            'api',
                             `repos/{owner}/{repo}/pulls/${pr.number}/merge`,
                             '-X',
                             'PUT',
@@ -69,85 +64,45 @@ export default function preRelease(vorpal): void {
                             '-F',
                             `sha=${pr.head.sha}`,
                         ],
-                        { cwd },
+                        cwd,
                     );
-
-                    if (0 !== prMergeCmd.status) {
-                        const prMergeResponse = JSON.parse(prMergeCmd.stdout.toString());
-                        throw new Error(prMergeResponse.message);
-                    }
 
                     this.log(`[${cwd}] Merged`);
                 }
 
-                const releaseListCmd = spawnSync(
-                    'hub',
+                const releaseList = Hub.run(
                     ['release', '-f', '%T', '--exclude-prereleases', '-L', '1'],
-                    { cwd },
+                    cwd,
                 );
 
-                if (0 !== releaseListCmd.status) {
-                    throw new Error(releaseListCmd.stderr.toString());
-                }
-
-                const previousRelease = releaseListCmd.stdout.toString() || '1.0.0';
+                const previousRelease = releaseList || '1.0.0';
                 const semver = new SemVer(previousRelease);
                 const newRelease = semver.inc(type);
 
                 this.log(`[${cwd}] Checking if release '${newRelease}' exists`);
 
-                const draftReleaseListCmd = spawnSync(
-                    'hub',
+                const draftReleaseList = Hub.run(
                     ['release', '-f', '%S %t %T', '--exclude-prereleases', '--include-drafts', '-L', '1'],
-                    { cwd },
+                    cwd,
                 );
-
-                if (0 !== draftReleaseListCmd.status) {
-                    throw new Error(draftReleaseListCmd.stderr.toString());
-                }
-
-                const draftReleaseList = draftReleaseListCmd.stdout.toString();
 
                 if (draftReleaseList.startsWith(`draft ${newRelease} `)) {
                     this.log(`[${cwd}] Updating release '${newRelease}'`);
 
                     const tag = draftReleaseList.split(' ')[2];
 
-                    const showReleaseCmd = spawnSync(
-                        'hub',
-                        [
-                            'release',
-                            'show',
-                            '-f',
-                            '%b',
-                            tag,
-                        ],
-                        { cwd },
+                    const releaseBody = Hub.run(
+                        ['release', 'show', '-f', '%b', tag],
+                        cwd,
                     );
 
-                    if (0 !== showReleaseCmd.status) {
-                        throw new Error(showReleaseCmd.stderr.toString());
-                    }
-
-                    const releaseBody = showReleaseCmd.stdout.toString();
-
                     if (isFinalizeStep) {
-                        const deleteReleaseCmd = spawnSync(
-                            'hub',
-                            [
-                                'release',
-                                'delete',
-                                tag,
-                            ],
-                            { cwd },
+                        Hub.run(
+                            ['release', 'delete', tag],
+                            cwd,
                         );
 
-                        if (0 !== deleteReleaseCmd.status) {
-                            throw new Error(deleteReleaseCmd.stderr.toString());
-                        }
-
-                        const createReleaseCmd = spawnSync(
-                            'hub',
+                        Hub.run(
                             [
                                 'release',
                                 'create',
@@ -160,15 +115,10 @@ export default function preRelease(vorpal): void {
                                 releaseBody,
                                 newRelease,
                             ],
-                            { cwd },
+                            cwd,
                         );
-
-                        if (0 !== createReleaseCmd.status) {
-                            throw new Error(createReleaseCmd.stderr.toString());
-                        }
                     } else {
-                        const updateReleaseCmd = spawnSync(
-                            'hub',
+                        Hub.run(
                             [
                                 'release',
                                 'edit',
@@ -178,12 +128,8 @@ export default function preRelease(vorpal): void {
                                 `${releaseBody}\n* ${pr.title} #${pr.number}`,
                                 tag,
                             ],
-                            { cwd },
+                            cwd,
                         );
-
-                        if (0 !== updateReleaseCmd.status) {
-                            throw new Error(updateReleaseCmd.stderr.toString());
-                        }
                     }
 
                     this.log(`[${cwd}] Updated`);
@@ -194,8 +140,7 @@ export default function preRelease(vorpal): void {
 
                     this.log(`[${cwd}] Creating draft release '${newRelease}'`);
 
-                    const createReleaseCmd = spawnSync(
-                        'hub',
+                    Hub.run(
                         [
                             'release',
                             'create',
@@ -208,12 +153,8 @@ export default function preRelease(vorpal): void {
                             `* ${pr.title} #${pr.number}`,
                             newRelease,
                         ],
-                        { cwd },
+                        cwd,
                     );
-
-                    if (0 !== createReleaseCmd.status) {
-                        throw new Error(createReleaseCmd.stderr.toString());
-                    }
 
                     this.log(`[${cwd}] Created`);
                 }
