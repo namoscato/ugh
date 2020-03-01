@@ -21,7 +21,7 @@
     "bin/"
   ],
   "dependencies": {
-    "jsonfile": "^5.0.0",
+    "jsonfile": "^6.0.0",
     "vorpal": "^1.12.0"
   },
   "devDependencies": {
