@@ -8,20 +8,14 @@ export interface IMultipleRepositoryConfiguration {
     repos: string[];
 }
 
-class Settings {
-    private readonly settings: object;
+export default class Settings {
+    private static settings = jsonfile.readFileSync(SETTINGS_FILE, { throws: false }) || {};
 
-    constructor() {
-        this.settings = jsonfile.readFileSync(SETTINGS_FILE, { throws: false }) || {};
-    }
-
-    public get<T>(name: string): T {
+    public static get<T>(name: string): T {
         return this.settings[name] || {};
     }
 
-    public getAbsoluteRepositoryPaths(config: IMultipleRepositoryConfiguration): string[] {
+    public static getAbsoluteRepositoryPaths(config: IMultipleRepositoryConfiguration): string[] {
         return config.repos.map((dir) => ('~' === dir[0] ? path.join(process.env.HOME, dir.slice(1)) : dir));
     }
 }
-
-export default new Settings();

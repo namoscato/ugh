@@ -1,17 +1,16 @@
 import { spawnSync } from 'child_process';
 
-class Hub {
+export default class Hub {
     public static api<T>(args: string[], cwd: string): T {
-        let result: string;
-
         try {
-            result = this.run(['api'].concat(args), cwd);
+            const result = this.run(['api'].concat(args), cwd);
+
+            return JSON.parse(result) as T;
         } catch (e) {
             const response = JSON.parse(e.message);
+
             throw new Error(response.message);
         }
-
-        return JSON.parse(result) as T;
     }
 
     public static run(args: string[], cwd: string): string {
@@ -28,5 +27,3 @@ class Hub {
         return cmd.stdout.toString();
     }
 }
-
-export default Hub;
