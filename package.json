@@ -2,7 +2,7 @@
   "name": "amo-ugh",
   "author": "Nick Amoscato <nick@amoscato.com>",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Command-line utilities for GitHub",
   "repository": {
     "type": "git",
