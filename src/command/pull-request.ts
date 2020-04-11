@@ -44,12 +44,19 @@ export default function pullRequest(vorpal): void {
                 throw new Error(`Branch '${head}' does not exist in any of the configured repositories`);
             }
 
+            const { base } = args.options;
+            const title = `${head} ${args.message}`;
+
             const prompt = await this.prompt({
                 default: false,
-                message: `Are you sure you want to open a pull request from '${head}' across ${repos.length} repositor${1 === repos.length ? 'y' : 'ies'}?`,
+                message: `Are you sure you want to create a pull request across ${repos.length} repositor${1 === repos.length ? 'y' : 'ies'}?\n\n`
+                    + `${base ? ` base: ${base}\n` : ''}`
+                    + ` head: ${head}\n`
+                    + `title: ${title}\n\n`
+                    + `Create pull request${1 === repos.length ? '' : 's'}`,
                 name: 'proceed',
                 type: 'confirm',
-            });
+            } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
             if (!prompt.proceed) {
                 throw new Error('User aborted action');
@@ -58,12 +65,12 @@ export default function pullRequest(vorpal): void {
             const defaults = config.defaults || {};
             const options = [
                 'pull-request',
-                '--message', `${head} ${args.message}`,
+                '--message', `${title}`,
                 '--head', head,
             ];
 
-            if (args.options.base) {
-                options.push('--base', args.options.base);
+            if (base) {
+                options.push('--base', base);
             }
 
             OPTIONS.forEach((option) => {
@@ -93,5 +100,5 @@ export default function pullRequest(vorpal): void {
 
                 this.log(pr.stdout);
             });
-        });
+        } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
