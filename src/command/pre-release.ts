@@ -1,6 +1,6 @@
 import * as SemVer from 'semver/classes/semver';
+import Settings, { IMultipleRepositoryConfiguration } from '../settings';
 import Hub from '../hub';
-import settings, { IMultipleRepositoryConfiguration } from '../settings';
 
 const COMMAND = 'pre-release';
 
@@ -40,14 +40,14 @@ export default function preRelease(vorpal): void {
         })
         .action(function action(args) {
             const { branch } = args;
-            const config = settings.get<PreReleaseConfiguration>(COMMAND);
+            const config = Settings.get<PreReleaseConfiguration>(COMMAND);
             const isFinalizeStep = (branch === FINALIZE_KEYWORD);
 
-            settings.getAbsoluteRepositoryPaths(config).forEach((cwd) => {
+            Settings.getAbsoluteRepositoryPaths(config).forEach((cwd) => {
                 let pr;
 
+                // region 1. Find and merge the pull request.
                 if (!isFinalizeStep) {
-                    // 1. Find and merge the pull request.
                     this.log(`[${cwd}] Checking if pull request for branch '${branch}' exists`);
 
                     const prList = Hub.api<IPullRequest[]>(
@@ -76,10 +76,10 @@ export default function preRelease(vorpal): void {
                     );
 
                     this.log(`[${cwd}] Merged`);
-                    // End Step 1
                 }
+                // endregion
 
-                // 2. Determine the target release.
+                // region 2. Determine the target release.
                 const releaseList = Hub.run(
                     ['release', '-f', '%T', '--exclude-prereleases', '-L', '1'],
                     cwd,
@@ -88,9 +88,9 @@ export default function preRelease(vorpal): void {
                 const previousRelease = releaseList || '1.0.0';
                 const semver = new SemVer(previousRelease);
                 const newRelease = semver.inc(type);
-                // End Step 2
+                // endregion
 
-                // 3. Determine if the target release has already been created as a draft.
+                // region 3. Determine if the target release has already been created as a draft.
                 this.log(`[${cwd}] Checking if release '${newRelease}' exists`);
 
                 const draftReleaseList = Hub.run(
@@ -99,9 +99,9 @@ export default function preRelease(vorpal): void {
                 );
 
                 const newReleaseExists = draftReleaseList.startsWith(`draft ${newRelease} `);
-                // End Step 3
+                // endregion
 
-                // 4. If the target release exists as a draft, update it; if not, create it.
+                // region 4. If the target release exists as a draft, update it; if not, create it.
                 if (newReleaseExists) {
                     this.log(`[${cwd}] Updating release '${newRelease}'`);
 
@@ -174,7 +174,7 @@ export default function preRelease(vorpal): void {
 
                     this.log(`[${cwd}] Created`);
                 }
-                // End Step 4
+                // endregion
             });
-        });
+        } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 }
