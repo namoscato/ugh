@@ -4,7 +4,7 @@ import Hub from '../hub';
 
 const COMMAND = 'pre-release';
 
-const DEFAULT_BRANCH = 'master'; // TODO: get this dynamically?
+const DEFAULT_BRANCH = 'master';
 const FINALIZE_KEYWORD = 'finalize';
 
 /** set of valid release types */
@@ -76,6 +76,18 @@ export default function preRelease(vorpal): void {
                     );
 
                     this.log(`[${cwd}] Merged`);
+                    this.log(`[${cwd}] Deleting branch ${branch}`);
+
+                    Hub.api(
+                        [
+                            `repos/{owner}/{repo}/git/refs/heads/${branch}`,
+                            '-X',
+                            'DELETE',
+                        ],
+                        cwd,
+                    );
+
+                    this.log(`[${cwd}] Deleted`);
                 }
                 // endregion
 
