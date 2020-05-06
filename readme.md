@@ -45,3 +45,17 @@ Create a `<base>...<head>` pull request across repositories with the specified `
 ```
 
 _See [`hub-pull-request`](https://hub.github.com/hub-pull-request.1.html)_
+
+### `pre-release <branch> <type>`
+
+Merge `<branch>...<head>` pull requests across repositories and upsert a release of the specified `<type>` (`patch` or `minor`).
+
+```json
+{
+  "pre-release": {
+    "repos": [
+      "~/dev/git/ugh"
+    ]
+  }
+}
+```

@@ -33,7 +33,7 @@ export default function preRelease(vorpal): void {
 
     vorpal
         .command(`${COMMAND} <branch> [type]`)
-        .description(`Merges pull requests across repositories associated with the specified <branch> and upserts a release of the specified <type> (valid options: ${RELEASE_TYPES.map((t) => `"${t}"`).join(' or ')}, default: "${RELEASE_TYPES[0]}")`)
+        .description(`Merge <branch>...<head> pull requests across repositories and upsert a release of the specified <type> (valid options: ${RELEASE_TYPES.map((t) => `"${t}"`).join(' or ')}, default: "${RELEASE_TYPES[0]}")`)
         .validate((input) => {
             type = input.type || RELEASE_TYPES[0];
             return RELEASE_TYPES.includes(type) ? true : `Invalid release type "${type}"`;
