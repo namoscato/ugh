@@ -1,9 +1,13 @@
 import { spawnSync } from 'child_process';
 
 export default class Hub {
-    public static api<T>(args: string[], cwd: string): T {
+    public static api<T>(args: string[], cwd: string): T|null {
         try {
             const result = this.run(['api'].concat(args), cwd);
+
+            if ('' === result) {
+                return null;
+            }
 
             return JSON.parse(result) as T;
         } catch (e) {

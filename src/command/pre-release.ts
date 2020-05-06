@@ -55,7 +55,7 @@ export default function preRelease(vorpal): void {
                         cwd,
                     );
 
-                    if (0 === prList.length) {
+                    if (null === prList.length || 0 === prList.length) {
                         throw new Error(`Unable to find any open pull requests for branch '${branch}'`);
                     }
 
