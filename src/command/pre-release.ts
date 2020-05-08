@@ -115,8 +115,6 @@ export default function preRelease(vorpal): void {
 
                 // region 4. If the target release exists as a draft, update it; if not, create it.
                 if (newReleaseExists) {
-                    this.log(`[${cwd}] Updating release '${newRelease}'`);
-
                     const tag = draftReleaseList.split(' ')[2];
 
                     const releaseBody = Hub.run(
@@ -145,7 +143,11 @@ export default function preRelease(vorpal): void {
                             ],
                             cwd,
                         );
+
+                        this.log(`[${cwd}] Created pre-release '${newRelease}'`);
                     } else {
+                        this.log(`[${cwd}] Updating release '${newRelease}'`);
+
                         Hub.run(
                             [
                                 'release',
@@ -158,9 +160,9 @@ export default function preRelease(vorpal): void {
                             ],
                             cwd,
                         );
-                    }
 
-                    this.log(`[${cwd}] Updated`);
+                        this.log(`[${cwd}] Updated`);
+                    }
                 } else {
                     if (isFinalizeStep) {
                         throw new Error(`Unable to find release '${newRelease}' to finalize`);
