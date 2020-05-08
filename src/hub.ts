@@ -12,7 +12,6 @@ export default class Hub {
             return JSON.parse(result) as T;
         } catch (e) {
             const response = JSON.parse(e.message);
-
             throw new Error(response.message);
         }
     }
@@ -25,7 +24,13 @@ export default class Hub {
         );
 
         if (0 !== cmd.status) {
-            throw new Error(cmd.stderr.toString());
+            let errorMessage = cmd.stderr.toString();
+
+            if ('' === errorMessage) {
+                errorMessage = cmd.stdout.toString();
+            }
+
+            throw new Error(errorMessage);
         }
 
         return cmd.stdout.toString();
