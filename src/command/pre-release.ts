@@ -13,9 +13,7 @@ const RELEASE_TYPES = [
     'minor',
 ];
 
-class PreReleaseConfiguration implements IMultipleRepositoryConfiguration {
-    public repos: string[];
-}
+type IPreReleaseConfiguration = IMultipleRepositoryConfiguration;
 
 interface IPullRequest {
     head: IPullRequestBranch;
@@ -40,7 +38,7 @@ export default function preRelease(vorpal): void {
         })
         .action(function action(args) {
             const { branch } = args;
-            const config = Settings.get<PreReleaseConfiguration>(COMMAND);
+            const config = Settings.get<IPreReleaseConfiguration>(COMMAND);
             const isFinalizeStep = (branch === FINALIZE_KEYWORD);
 
             Settings.getAbsoluteRepositoryPaths(config).forEach((cwd) => {

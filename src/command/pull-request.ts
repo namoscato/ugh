@@ -24,7 +24,7 @@ export default function pullRequest(vorpal): void {
     vorpal
         .command(`${COMMAND} <template> <head> <message>`)
         .option('-b, --base <base>', 'The base branch in the "[OWNER:]BRANCH" format. Defaults to the default branch of the upstream repository (usually "master").')
-        .description('Create a <base>...<head> pull request across repositories with the specified <message>')
+        .description('Create <base>...<head> pull requests across repositories with the specified <message>')
         .validate((input) => {
             const { template } = input;
 
