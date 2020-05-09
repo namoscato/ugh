@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 import * as Vorpal from 'vorpal';
+import preRelease from './command/pre-release';
 import pullRequest from './command/pull-request';
 
 const vorpal = Vorpal();
 
+preRelease(vorpal);
 pullRequest(vorpal);
 
 vorpal

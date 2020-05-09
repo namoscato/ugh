@@ -1,6 +1,5 @@
-import { spawnSync } from 'child_process';
-import { join } from 'path';
-import settings from '../settings';
+import Settings, { IMultipleRepositoryConfiguration } from '../settings';
+import Hub from '../hub';
 
 const COMMAND = 'pull-request';
 
@@ -11,33 +10,41 @@ const OPTIONS = [
     'labels',
 ];
 
+interface IPullRequestConfiguration extends IMultipleRepositoryConfiguration {
+    defaults?: {
+        assign?: string;
+        labels?: string;
+        reviewer?: string;
+    };
+}
+
 export default function pullRequest(vorpal): void {
-    let config;
+    let config: IPullRequestConfiguration;
 
     vorpal
         .command(`${COMMAND} <template> <head> <message>`)
         .option('-b, --base <base>', 'The base branch in the "[OWNER:]BRANCH" format. Defaults to the default branch of the upstream repository (usually "master").')
-        .description('Create a <base>...<head> pull request across repositories with the specified <message>')
+        .description('Create <base>...<head> pull requests across repositories with the specified <message>')
         .validate((input) => {
             const { template } = input;
 
-            config = settings.get(COMMAND)[template];
+            config = Settings.get<IPullRequestConfiguration>(COMMAND)[template];
 
             return config ? true : `${COMMAND}.${template} configuration not defined`;
         })
         .action(async function action(args) {
             const { head } = args;
 
-            const repos = config.repos.map((dir) => ('~' === dir[0] ? join(process.env.HOME, dir.slice(1)) : dir)).filter((cwd) => {
-                this.log(`[${cwd}] Checking if branch '${head}' exists`);
+            const repos = Settings.getAbsoluteRepositoryPaths(config).filter((cwd) => {
+                try {
+                    this.log(`[${cwd}] Checking if branch '${head}' exists`);
 
-                const ref = spawnSync(
-                    'hub',
-                    ['api', `repos/{owner}/{repo}/git/ref/heads/${head}`],
-                    { cwd },
-                );
+                    Hub.api([`repos/{owner}/{repo}/git/ref/heads/${head}`], cwd);
 
-                return 0 === ref.status;
+                    return true;
+                } catch (e) {
+                    return false;
+                }
             });
 
             if (0 === repos.length) {
@@ -84,21 +91,7 @@ export default function pullRequest(vorpal): void {
             repos.forEach((cwd) => {
                 this.log(`[${cwd}] Creating pull request`);
 
-                const pr = spawnSync(
-                    'hub',
-                    options,
-                    {
-                        cwd,
-                        encoding: 'utf-8',
-                        stdio: 'pipe',
-                    },
-                );
-
-                if (0 !== pr.status) {
-                    throw new Error(pr.stderr.toString());
-                }
-
-                this.log(pr.stdout);
+                this.log(Hub.run(options, cwd));
             });
         } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 }

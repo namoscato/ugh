@@ -26,7 +26,7 @@ ugh <command>
 
 ### `pull-request [--base <base>] <template> <head> <message>`
 
-Create a `<base>...<head>` pull request across repositories with the specified `<message>` where `<template>` references a configuration property, i.e.
+Create `<base>...<head>` pull requests across repositories with the specified `<message>` where `<template>` references a configuration property, i.e.
 
 ```json
 {
@@ -45,3 +45,17 @@ Create a `<base>...<head>` pull request across repositories with the specified `
 ```
 
 _See [`hub-pull-request`](https://hub.github.com/hub-pull-request.1.html)_
+
+### `pre-release <branch> [type]`
+
+Merge `<branch>...<head>` pull requests across repositories and upsert a release of the specified `<type>` (`patch` or `minor`).
+
+```json
+{
+  "pre-release": {
+    "repos": [
+      "~/dev/git/ugh"
+    ]
+  }
+}
+```
