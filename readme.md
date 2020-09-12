@@ -1,4 +1,6 @@
-# ugh [![Actions Status](https://github.com/namoscato/ugh/workflows/Node%20CI/badge.svg)](https://github.com/namoscato/ugh/actions)
+![CI](https://github.com/namoscato/ugh/workflows/CI/badge.svg) [![npm version](https://badge.fury.io/js/amo-ugh.svg)](https://www.npmjs.com/package/amo-ugh)
+
+# ugh
 
 Command-line **u**tilities for **G**it**H**ub
 
